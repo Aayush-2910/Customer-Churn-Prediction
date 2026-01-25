@@ -1,4 +1,3 @@
-# Customer-Churn-Prediction
 # Customer Churn Prediction
 
 This project predicts whether a customer will churn using machine learning
