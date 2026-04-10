@@ -98,7 +98,10 @@ function displayResult(result, formData) {
         </div>
         
         <div class="recommendations">
-            <h3>💡 Recommendations</h3>
+            <h3>
+                <i data-lucide="lightbulb"></i>
+                Recommendations
+            </h3>
             <ul>
                 ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
             </ul>
@@ -113,40 +116,40 @@ function generateRecommendations(data, churnProb) {
     const recommendations = [];
     
     if (churnProb >= 50) {
-        recommendations.push('🚨 High churn risk detected - immediate action recommended');
+        recommendations.push('<i data-lucide="alert-circle"></i> High churn risk detected - immediate action recommended');
     }
     
     if (data.Contract === 'Month-to-month') {
-        recommendations.push('📝 Offer long-term contract with discount to increase retention');
+        recommendations.push('<i data-lucide="file-text"></i> Offer long-term contract with discount to increase retention');
     }
     
     if (data.tenure < 12) {
-        recommendations.push('🎯 New customer - provide onboarding support and engagement programs');
+        recommendations.push('<i data-lucide="target"></i> New customer - provide onboarding support and engagement programs');
     }
     
     if (data.TechSupport === 'No' && data.InternetService !== 'No') {
-        recommendations.push('🛠️ Offer complimentary tech support to improve satisfaction');
+        recommendations.push('<i data-lucide="headphones"></i> Offer complimentary tech support to improve satisfaction');
     }
     
     if (data.OnlineSecurity === 'No' && data.InternetService !== 'No') {
-        recommendations.push('🔒 Promote online security services for added value');
+        recommendations.push('<i data-lucide="shield"></i> Promote online security services for added value');
     }
     
     if (data.PaymentMethod === 'Electronic check') {
-        recommendations.push('💳 Encourage automatic payment methods for convenience');
+        recommendations.push('<i data-lucide="credit-card"></i> Encourage automatic payment methods for convenience');
     }
     
     if (data.MonthlyCharges > 80) {
-        recommendations.push('💰 Review pricing - consider loyalty discounts or bundle offers');
+        recommendations.push('<i data-lucide="dollar-sign"></i> Review pricing - consider loyalty discounts or bundle offers');
     }
     
     if (data.InternetService === 'Fiber optic' && churnProb > 50) {
-        recommendations.push('📡 Fiber optic customers need extra attention - ensure service quality');
+        recommendations.push('<i data-lucide="wifi"></i> Fiber optic customers need extra attention - ensure service quality');
     }
     
     if (recommendations.length === 0) {
-        recommendations.push('✅ Customer profile looks stable - maintain current service quality');
-        recommendations.push('📊 Continue monitoring engagement metrics');
+        recommendations.push('<i data-lucide="check-circle"></i> Customer profile looks stable - maintain current service quality');
+        recommendations.push('<i data-lucide="bar-chart"></i> Continue monitoring engagement metrics');
     }
     
     return recommendations;
