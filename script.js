@@ -1,277 +1,153 @@
-document.getElementById('predictionForm').addEventListener('submit', function(e) {
+document.getElementById('predictionForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    // Show loading animation
-    const loadingDiv = document.getElementById('loading');
-    const resultDiv = document.getElementById('result');
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('resultCard').classList.add('hidden');
     
-    loadingDiv.classList.add('active');
-    resultDiv.classList.add('hidden');
-    
-    // Get all form data matching the model's features
     const formData = {
         gender: document.getElementById('gender').value,
-        seniorCitizen: parseInt(document.getElementById('seniorCitizen').value),
-        partner: document.getElementById('partner').value,
-        dependents: document.getElementById('dependents').value,
+        SeniorCitizen: parseInt(document.getElementById('seniorCitizen').value),
+        Partner: document.getElementById('partner').value,
+        Dependents: document.getElementById('dependents').value,
         tenure: parseInt(document.getElementById('tenure').value),
-        phoneService: document.getElementById('phoneService').value,
-        multipleLines: document.getElementById('multipleLines').value,
-        internetService: document.getElementById('internetService').value,
-        onlineSecurity: document.getElementById('onlineSecurity').value,
-        onlineBackup: document.getElementById('onlineBackup').value,
-        deviceProtection: document.getElementById('deviceProtection').value,
-        techSupport: document.getElementById('techSupport').value,
-        streamingTV: document.getElementById('streamingTV').value,
-        streamingMovies: document.getElementById('streamingMovies').value,
-        contract: document.getElementById('contract').value,
-        paperlessBilling: document.getElementById('paperlessBilling').value,
-        paymentMethod: document.getElementById('paymentMethod').value,
-        monthlyCharges: parseFloat(document.getElementById('monthlyCharges').value),
-        totalCharges: parseFloat(document.getElementById('totalCharges').value)
+        PhoneService: document.getElementById('phoneService').value,
+        MultipleLines: document.getElementById('multipleLines').value,
+        InternetService: document.getElementById('internetService').value,
+        OnlineSecurity: document.getElementById('onlineSecurity').value,
+        OnlineBackup: document.getElementById('onlineBackup').value,
+        DeviceProtection: document.getElementById('deviceProtection').value,
+        TechSupport: document.getElementById('techSupport').value,
+        StreamingTV: document.getElementById('streamingTV').value,
+        StreamingMovies: document.getElementById('streamingMovies').value,
+        Contract: document.getElementById('contract').value,
+        PaperlessBilling: document.getElementById('paperlessBilling').value,
+        PaymentMethod: document.getElementById('paymentMethod').value,
+        MonthlyCharges: parseFloat(document.getElementById('monthlyCharges').value),
+        TotalCharges: parseFloat(document.getElementById('totalCharges').value)
     };
     
-    // Simulate processing time for better UX
-    setTimeout(() => {
-        // Calculate churn probability using model-based logic
-        const churnProbability = calculateChurnProbability(formData);
-        
-        // Hide loading and display result with recommendations
-        loadingDiv.classList.remove('active');
-        displayResult(churnProbability, formData);
-    }, 1800);
-});
-
-// Auto-fill form if test data exists
-window.addEventListener('DOMContentLoaded', function() {
-    const testData = localStorage.getItem('testData');
-    if (testData) {
-        const data = JSON.parse(testData);
-        Object.keys(data).forEach(key => {
-            const element = document.getElementById(key);
-            if (element) {
-                element.value = data[key];
-            }
+    try {
+        const response = await fetch('http://127.0.0.1:5000/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
         });
-        localStorage.removeItem('testData');
         
-        // Auto-submit after a short delay
-        setTimeout(() => {
-            document.getElementById('predictionForm').dispatchEvent(new Event('submit'));
-        }, 500);
+        if (!response.ok) {
+            throw new Error('Prediction failed');
+        }
+        
+        const result = await response.json();
+        document.getElementById('loading').classList.add('hidden');
+        displayResult(result, formData);
+        
+    } catch (error) {
+        document.getElementById('loading').classList.add('hidden');
+        alert('Error: ' + error.message);
     }
 });
 
-function calculateChurnProbability(data) {
-    // Advanced calculation based on Logistic Regression patterns
-    let score = 50;
+function displayResult(result, formData) {
+    const resultCard = document.getElementById('resultCard');
+    const resultContent = document.getElementById('resultContent');
     
-    // Tenure impact (strongest predictor)
-    if (data.tenure < 6) score += 25;
-    else if (data.tenure < 12) score += 15;
-    else if (data.tenure < 24) score += 5;
-    else if (data.tenure >= 48) score -= 20;
-    else score -= 10;
+    const churnProb = result.churn_probability;
+    const willChurn = result.prediction === 1;
     
-    // Contract type (very strong predictor)
-    if (data.contract === 'Month-to-month') score += 20;
-    else if (data.contract === 'One year') score -= 5;
-    else if (data.contract === 'Two year') score -= 25;
-    
-    // Internet service impact
-    if (data.internetService === 'Fiber optic') score += 12;
-    else if (data.internetService === 'DSL') score += 3;
-    else score -= 8;
-    
-    // Payment method (electronic check is high risk)
-    if (data.paymentMethod === 'Electronic check') score += 18;
-    else if (data.paymentMethod === 'Mailed check') score += 5;
-    else score -= 8; // Automatic payments reduce churn
-    
-    // Paperless billing
-    if (data.paperlessBilling === 'Yes') score += 8;
-    
-    // Monthly charges impact
-    if (data.monthlyCharges > 80) score += 12;
-    else if (data.monthlyCharges > 60) score += 6;
-    else if (data.monthlyCharges < 30) score -= 8;
-    
-    // Senior citizen
-    if (data.seniorCitizen === 1) score += 8;
-    
-    // Partner and dependents (family reduces churn)
-    if (data.partner === 'No') score += 8;
-    if (data.dependents === 'No') score += 6;
-    
-    // Phone service
-    if (data.phoneService === 'No') score += 5;
-    
-    // Multiple lines
-    if (data.multipleLines === 'Yes') score -= 5;
-    
-    // Count premium services (reduce churn)
-    let premiumServices = 0;
-    if (data.onlineSecurity === 'Yes') premiumServices++;
-    if (data.onlineBackup === 'Yes') premiumServices++;
-    if (data.deviceProtection === 'Yes') premiumServices++;
-    if (data.techSupport === 'Yes') premiumServices++;
-    
-    score -= premiumServices * 6;
-    
-    // Streaming services
-    if (data.streamingTV === 'Yes') score -= 3;
-    if (data.streamingMovies === 'Yes') score -= 3;
-    
-    // Normalize to 0-100
-    const probability = Math.max(0, Math.min(100, score));
-    
-    return probability;
-}
-
-function displayResult(probability, formData) {
-    const resultDiv = document.getElementById('result');
-    const resultIcon = document.getElementById('resultIcon');
-    const resultTitle = document.getElementById('resultTitle');
-    const resultMessage = document.getElementById('resultMessage');
-    const probabilityFill = document.getElementById('probabilityFill');
-    const probabilityValue = document.getElementById('probabilityValue');
-    const recommendations = document.getElementById('recommendations');
-    
-    // Calculate business metrics
-    const clv = formData.totalCharges;
-    const monthlyRevenue = formData.monthlyCharges;
-    const avgLifetimeMonths = 36; // Industry average
-    const potentialLoss = monthlyRevenue * avgLifetimeMonths;
-    
-    // Update CLV and loss values
-    document.getElementById('clvValue').textContent = '$' + clv.toFixed(2);
-    document.getElementById('lossValue').textContent = '$' + potentialLoss.toFixed(2);
-    
-    // Show result
-    resultDiv.classList.remove('hidden');
-    
-    // Set probability with animation
-    setTimeout(() => {
-        probabilityFill.style.width = probability + '%';
-    }, 100);
-    
-    probabilityValue.textContent = probability.toFixed(1) + '%';
-    
-    // Generate recommendations based on data
-    let recommendationsList = generateRecommendations(probability, formData);
-    
-    // Determine risk level with Lucide icons and priority
-    if (probability >= 70) {
-        resultDiv.className = 'result-card high-risk';
-        resultIcon.innerHTML = '<i data-lucide="alert-triangle" style="width: 80px; height: 80px; color: #f44336;"></i>';
-        resultTitle.textContent = 'High Churn Risk Detected';
-        resultTitle.style.color = '#f44336';
-        resultMessage.textContent = 'Critical Alert: This customer shows strong indicators of churning. Immediate intervention is required to prevent revenue loss. The customer profile suggests dissatisfaction with current service terms and pricing structure.';
-        document.getElementById('priorityValue').textContent = 'URGENT';
-        document.getElementById('priorityValue').style.color = '#f44336';
-    } else if (probability >= 40) {
-        resultDiv.className = 'result-card medium-risk';
-        resultIcon.innerHTML = '<i data-lucide="alert-circle" style="width: 80px; height: 80px; color: #ff9eb1;"></i>';
-        resultTitle.textContent = 'Moderate Churn Risk';
-        resultTitle.style.color = '#ff9eb1';
-        resultMessage.textContent = 'Warning: This customer exhibits moderate churn indicators. Proactive engagement and service optimization can significantly improve retention. Consider implementing targeted retention strategies within the next 30 days.';
-        document.getElementById('priorityValue').textContent = 'HIGH';
-        document.getElementById('priorityValue').style.color = '#ff9eb1';
+    let riskLevel, riskClass;
+    if (churnProb >= 70) {
+        riskLevel = 'High Risk';
+        riskClass = 'high';
+    } else if (churnProb >= 40) {
+        riskLevel = 'Medium Risk';
+        riskClass = 'medium';
     } else {
-        resultDiv.className = 'result-card low-risk';
-        resultIcon.innerHTML = '<i data-lucide="check-circle" style="width: 80px; height: 80px; color: #4caf50;"></i>';
-        resultTitle.textContent = 'Low Churn Risk - Stable Customer';
-        resultTitle.style.color = '#4caf50';
-        resultMessage.textContent = 'Excellent: This customer demonstrates strong loyalty indicators and satisfaction with current services. Focus on maintaining service quality and exploring upsell opportunities to maximize customer lifetime value.';
-        document.getElementById('priorityValue').textContent = 'NORMAL';
-        document.getElementById('priorityValue').style.color = '#4caf50';
+        riskLevel = 'Low Risk';
+        riskClass = 'low';
     }
     
-    // Display recommendations with icons
-    recommendations.innerHTML = '<h3><i data-lucide="list-checks"></i> Strategic Action Plan</h3><ul>' + 
-        recommendationsList.map(rec => `<li><i data-lucide="chevron-right"></i> ${rec}</li>`).join('') + 
-        '</ul>';
+    const recommendations = generateRecommendations(formData, churnProb);
+
     
-    // Reinitialize Lucide icons for dynamically added content
-    lucide.createIcons();
+    resultContent.innerHTML = `
+        <div class="risk-indicator ${riskClass}">
+            <h3>${riskLevel}</h3>
+            <div class="percentage">${churnProb.toFixed(1)}%</div>
+            <p>Churn Probability</p>
+        </div>
+        
+        <div class="details-grid">
+            <div class="detail-item">
+                <strong>Prediction</strong>
+                ${willChurn ? 'Customer likely to churn' : 'Customer likely to stay'}
+            </div>
+            <div class="detail-item">
+                <strong>Tenure</strong>
+                ${formData.tenure} months
+            </div>
+            <div class="detail-item">
+                <strong>Contract Type</strong>
+                ${formData.Contract}
+            </div>
+            <div class="detail-item">
+                <strong>Monthly Charges</strong>
+                $${formData.MonthlyCharges.toFixed(2)}
+            </div>
+        </div>
+        
+        <div class="recommendations">
+            <h3>💡 Recommendations</h3>
+            <ul>
+                ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
+            </ul>
+        </div>
+    `;
     
-    // Smooth scroll to result
-    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    resultCard.classList.remove('hidden');
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function generateRecommendations(probability, data) {
+function generateRecommendations(data, churnProb) {
     const recommendations = [];
     
-    if (probability >= 70) {
-        recommendations.push('Deploy immediate retention specialist for personalized outreach within 24 hours');
-        recommendations.push('Offer exclusive loyalty discount package (20-25% off for 6 months commitment)');
-        recommendations.push('Schedule executive-level customer success review call');
+    if (churnProb >= 50) {
+        recommendations.push('🚨 High churn risk detected - immediate action recommended');
     }
     
-    if (data.contract === 'Month-to-month') {
-        recommendations.push('Present annual contract upgrade with 15% discount and premium feature bundle');
-        recommendations.push('Highlight contract stability benefits: price lock guarantee and priority support');
+    if (data.Contract === 'Month-to-month') {
+        recommendations.push('📝 Offer long-term contract with discount to increase retention');
     }
     
-    if (data.tenure < 6) {
-        recommendations.push('Activate early-stage customer success program with dedicated onboarding specialist');
-        recommendations.push('Provide complimentary service upgrade for first 3 months to demonstrate value');
-    } else if (data.tenure < 12) {
-        recommendations.push('Implement quarterly business review process to ensure satisfaction');
-        recommendations.push('Offer loyalty milestone rewards at 6-month and 12-month anniversaries');
+    if (data.tenure < 12) {
+        recommendations.push('🎯 New customer - provide onboarding support and engagement programs');
     }
     
-    if (data.paymentMethod === 'Electronic check') {
-        recommendations.push('Incentivize automatic payment method switch with $50 account credit');
-        recommendations.push('Emphasize convenience and security benefits of automated billing');
+    if (data.TechSupport === 'No' && data.InternetService !== 'No') {
+        recommendations.push('🛠️ Offer complimentary tech support to improve satisfaction');
     }
     
-    if (data.monthlyCharges > 80) {
-        recommendations.push('Conduct comprehensive pricing optimization analysis and present cost-saving alternatives');
-        recommendations.push('Offer customized service bundle that reduces monthly costs by 10-15%');
+    if (data.OnlineSecurity === 'No' && data.InternetService !== 'No') {
+        recommendations.push('🔒 Promote online security services for added value');
     }
     
-    let premiumServices = 0;
-    if (data.onlineSecurity === 'Yes') premiumServices++;
-    if (data.onlineBackup === 'Yes') premiumServices++;
-    if (data.deviceProtection === 'Yes') premiumServices++;
-    if (data.techSupport === 'Yes') premiumServices++;
-    
-    if (premiumServices < 2 && data.internetService !== 'No') {
-        recommendations.push('Launch 60-day free trial of premium security and backup services');
-        recommendations.push('Demonstrate ROI of premium services through personalized use case analysis');
+    if (data.PaymentMethod === 'Electronic check') {
+        recommendations.push('💳 Encourage automatic payment methods for convenience');
     }
     
-    if (data.techSupport === 'No' && probability >= 40) {
-        recommendations.push('Provide complimentary 90-day premium tech support to improve satisfaction');
-        recommendations.push('Assign dedicated technical account manager for proactive issue resolution');
+    if (data.MonthlyCharges > 80) {
+        recommendations.push('💰 Review pricing - consider loyalty discounts or bundle offers');
     }
     
-    if (data.partner === 'No' && data.dependents === 'No') {
-        recommendations.push('Introduce family plan options with multi-user discounts and referral incentives');
-        recommendations.push('Create targeted marketing campaign for household expansion opportunities');
-    }
-    
-    if (data.internetService === 'Fiber optic' && data.monthlyCharges > 70) {
-        recommendations.push('Review fiber optic pricing competitiveness against market alternatives');
-        recommendations.push('Consider value-add services to justify premium pricing tier');
-    }
-    
-    if (probability < 40) {
-        recommendations.push('Explore premium feature upsell opportunities to increase customer lifetime value');
-        recommendations.push('Request customer testimonial and referrals for advocacy program');
-        recommendations.push('Implement quarterly satisfaction surveys to maintain engagement');
-    }
-    
-    if (data.paperlessBilling === 'Yes' && probability >= 50) {
-        recommendations.push('Enhance digital communication strategy with personalized service updates');
+    if (data.InternetService === 'Fiber optic' && churnProb > 50) {
+        recommendations.push('📡 Fiber optic customers need extra attention - ensure service quality');
     }
     
     if (recommendations.length === 0) {
-        recommendations.push('Maintain current high-quality service delivery standards');
-        recommendations.push('Continue monthly usage pattern monitoring and proactive engagement');
-        recommendations.push('Schedule annual strategic account review to identify growth opportunities');
+        recommendations.push('✅ Customer profile looks stable - maintain current service quality');
+        recommendations.push('📊 Continue monitoring engagement metrics');
     }
     
-    return recommendations.slice(0, 8); // Limit to top 8 most relevant recommendations
+    return recommendations;
 }

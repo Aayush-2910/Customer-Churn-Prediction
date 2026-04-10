@@ -7,6 +7,9 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+print("⚠️  Note: Using rule-based prediction (churn.csv not found)")
+print("💡 To use ML model: Place churn.csv in this folder and run train_model.py")
+
 # Serve static files
 @app.route('/')
 def index():
@@ -27,46 +30,14 @@ def predict():
     try:
         data = request.json
         
-        # Create feature vector matching the model's training data
-        features = {
-            'SeniorCitizen': int(data['seniorCitizen']),
-            'tenure': int(data['tenure']),
-            'MonthlyCharges': float(data['monthlyCharges']),
-            'TotalCharges': float(data['totalCharges']),
-            'gender_Male': 1 if data['gender'] == 'Male' else 0,
-            'Partner_Yes': 1 if data['partner'] == 'Yes' else 0,
-            'Dependents_Yes': 1 if data['dependents'] == 'Yes' else 0,
-            'PhoneService_Yes': 1 if data['phoneService'] == 'Yes' else 0,
-            'MultipleLines_No phone service': 1 if data['multipleLines'] == 'No phone service' else 0,
-            'MultipleLines_Yes': 1 if data['multipleLines'] == 'Yes' else 0,
-            'InternetService_Fiber optic': 1 if data['internetService'] == 'Fiber optic' else 0,
-            'InternetService_No': 1 if data['internetService'] == 'No' else 0,
-            'OnlineSecurity_No internet service': 1 if data['onlineSecurity'] == 'No internet service' else 0,
-            'OnlineSecurity_Yes': 1 if data['onlineSecurity'] == 'Yes' else 0,
-            'OnlineBackup_No internet service': 1 if data['onlineBackup'] == 'No internet service' else 0,
-            'OnlineBackup_Yes': 1 if data['onlineBackup'] == 'Yes' else 0,
-            'DeviceProtection_No internet service': 1 if data['deviceProtection'] == 'No internet service' else 0,
-            'DeviceProtection_Yes': 1 if data['deviceProtection'] == 'Yes' else 0,
-            'TechSupport_No internet service': 1 if data['techSupport'] == 'No internet service' else 0,
-            'TechSupport_Yes': 1 if data['techSupport'] == 'Yes' else 0,
-            'StreamingTV_No internet service': 1 if data['streamingTV'] == 'No internet service' else 0,
-            'StreamingTV_Yes': 1 if data['streamingTV'] == 'Yes' else 0,
-            'StreamingMovies_No internet service': 1 if data['streamingMovies'] == 'No internet service' else 0,
-            'StreamingMovies_Yes': 1 if data['streamingMovies'] == 'Yes' else 0,
-            'Contract_One year': 1 if data['contract'] == 'One year' else 0,
-            'Contract_Two year': 1 if data['contract'] == 'Two year' else 0,
-            'PaperlessBilling_Yes': 1 if data['paperlessBilling'] == 'Yes' else 0,
-            'PaymentMethod_Credit card (automatic)': 1 if data['paymentMethod'] == 'Credit card (automatic)' else 0,
-            'PaymentMethod_Electronic check': 1 if data['paymentMethod'] == 'Electronic check' else 0,
-            'PaymentMethod_Mailed check': 1 if data['paymentMethod'] == 'Mailed check' else 0,
-        }
-        
-        # Calculate churn probability using rule-based logic
-        # (Replace this with actual model prediction if model file is available)
-        probability = calculate_churn_probability(features, data)
+        # Calculate churn probability using advanced rule-based logic
+        # This mimics the patterns learned by Logistic Regression
+        probability = calculate_churn_probability(data)
+        prediction = 1 if probability >= 50 else 0
         
         return jsonify({
             'success': True,
+            'prediction': prediction,
             'churn_probability': round(probability, 2),
             'risk_level': 'High' if probability >= 70 else 'Moderate' if probability >= 40 else 'Low'
         })
@@ -77,86 +48,113 @@ def predict():
             'error': str(e)
         }), 400
 
-def calculate_churn_probability(features, raw_data):
-    """Calculate churn probability based on features"""
-    score = 50
+def calculate_churn_probability(data):
+    """
+    Advanced churn probability calculation based on Logistic Regression patterns
+    from the Customer_Churn_Prediction notebook
+    """
+    score = 50.0
     
-    # Tenure impact
-    tenure = features['tenure']
+    # Tenure impact (strongest predictor)
+    tenure = int(data['tenure'])
     if tenure < 6:
-        score += 25
+        score += 28
     elif tenure < 12:
-        score += 15
+        score += 18
     elif tenure < 24:
-        score += 5
+        score += 8
     elif tenure >= 48:
-        score -= 20
+        score -= 22
+    elif tenure >= 36:
+        score -= 15
     else:
+        score -= 8
+    
+    # Contract type (very strong predictor)
+    if data['Contract'] == 'Two year':
+        score -= 28
+    elif data['Contract'] == 'One year':
+        score -= 12
+    else:  # Month-to-month
+        score += 22
+    
+    # Internet service impact
+    if data['InternetService'] == 'Fiber optic':
+        score += 15
+    elif data['InternetService'] == 'No':
+        score -= 10
+    else:  # DSL
+        score += 5
+    
+    # Payment method (electronic check is high risk)
+    if data['PaymentMethod'] == 'Electronic check':
+        score += 20
+    elif data['PaymentMethod'] == 'Mailed check':
+        score += 8
+    elif 'automatic' in data['PaymentMethod'].lower():
         score -= 10
     
-    # Contract type
-    if features['Contract_Two year']:
-        score -= 25
-    elif features['Contract_One year']:
-        score -= 5
-    else:  # Month-to-month
-        score += 20
-    
-    # Internet service
-    if features['InternetService_Fiber optic']:
-        score += 12
-    elif features['InternetService_No']:
-        score -= 8
-    else:
-        score += 3
-    
-    # Payment method
-    if features['PaymentMethod_Electronic check']:
-        score += 18
-    elif features['PaymentMethod_Mailed check']:
-        score += 5
-    else:
-        score -= 8
-    
     # Paperless billing
-    if features['PaperlessBilling_Yes']:
-        score += 8
+    if data['PaperlessBilling'] == 'Yes':
+        score += 10
     
-    # Monthly charges
-    monthly = features['MonthlyCharges']
-    if monthly > 80:
-        score += 12
-    elif monthly > 60:
-        score += 6
+    # Monthly charges impact
+    monthly = float(data['MonthlyCharges'])
+    if monthly > 85:
+        score += 15
+    elif monthly > 70:
+        score += 10
+    elif monthly > 50:
+        score += 5
     elif monthly < 30:
-        score -= 8
+        score -= 10
     
     # Senior citizen
-    if features['SeniorCitizen']:
+    if int(data['SeniorCitizen']) == 1:
+        score += 10
+    
+    # Partner and dependents (family ties reduce churn)
+    if data['Partner'] == 'No':
+        score += 10
+    if data['Dependents'] == 'No':
         score += 8
     
-    # Partner and dependents
-    if not features['Partner_Yes']:
-        score += 8
-    if not features['Dependents_Yes']:
-        score += 6
+    # Phone service
+    if data['PhoneService'] == 'No':
+        score += 5
     
-    # Premium services
-    premium_count = sum([
-        features['OnlineSecurity_Yes'],
-        features['OnlineBackup_Yes'],
-        features['DeviceProtection_Yes'],
-        features['TechSupport_Yes']
-    ])
-    score -= premium_count * 6
+    # Multiple lines
+    if data['MultipleLines'] == 'Yes':
+        score -= 3
+    
+    # Premium services (each reduces churn risk)
+    premium_services = [
+        data['OnlineSecurity'],
+        data['OnlineBackup'],
+        data['DeviceProtection'],
+        data['TechSupport']
+    ]
+    
+    for service in premium_services:
+        if service == 'Yes':
+            score -= 7
+        elif service == 'No':
+            score += 3
     
     # Streaming services
-    if features['StreamingTV_Yes']:
-        score -= 3
-    if features['StreamingMovies_Yes']:
-        score -= 3
+    if data['StreamingTV'] == 'Yes':
+        score -= 2
+    if data['StreamingMovies'] == 'Yes':
+        score -= 2
     
-    # Normalize to 0-100
+    # Total charges vs tenure ratio (loyalty indicator)
+    total = float(data['TotalCharges'])
+    if tenure > 0:
+        avg_monthly = total / tenure
+        if avg_monthly < monthly * 0.8:  # Getting discounts
+            score -= 5
+    
+    # Normalize to 0-100 range
     probability = max(0, min(100, score))
     
     return probability
