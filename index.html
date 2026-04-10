@@ -24,7 +24,7 @@
                     <i data-lucide="bar-chart-3"></i>
                     <span>Analytics</span>
                 </a>
-                <a href="#" class="nav-link">
+                <a href="customers.html" class="nav-link">
                     <i data-lucide="users"></i>
                     <span>Customers</span>
                 </a>
@@ -354,5 +354,46 @@
         lucide.createIcons();
     </script>
     <script src="script.js"></script>
+    <script>
+        // Auto-fill from customer data
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const shouldPredict = urlParams.get('predict');
+            const customerData = localStorage.getItem('customerData');
+            
+            if (shouldPredict && customerData) {
+                const customer = JSON.parse(customerData);
+                
+                // Fill form fields
+                document.getElementById('gender').value = customer.gender;
+                document.getElementById('seniorCitizen').value = customer.seniorCitizen;
+                document.getElementById('partner').value = customer.partner;
+                document.getElementById('dependents').value = customer.dependents;
+                document.getElementById('tenure').value = customer.tenure;
+                document.getElementById('contract').value = customer.contract;
+                document.getElementById('paperlessBilling').value = 'Yes';
+                document.getElementById('paymentMethod').value = customer.paymentMethod;
+                document.getElementById('phoneService').value = customer.phoneService;
+                document.getElementById('multipleLines').value = 'No';
+                document.getElementById('internetService').value = customer.internetService;
+                document.getElementById('onlineSecurity').value = customer.onlineSecurity;
+                document.getElementById('onlineBackup').value = 'No';
+                document.getElementById('deviceProtection').value = 'No';
+                document.getElementById('techSupport').value = customer.techSupport;
+                document.getElementById('streamingTV').value = 'No';
+                document.getElementById('streamingMovies').value = 'No';
+                document.getElementById('monthlyCharges').value = customer.charges;
+                document.getElementById('totalCharges').value = customer.totalCharges;
+                
+                // Clear localStorage
+                localStorage.removeItem('customerData');
+                
+                // Auto-submit after a short delay
+                setTimeout(() => {
+                    document.getElementById('predictionForm').dispatchEvent(new Event('submit'));
+                }, 500);
+            }
+        });
+    </script>
 </body>
 </html>

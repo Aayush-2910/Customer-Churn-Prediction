@@ -23,6 +23,14 @@ def analytics():
 def analytics_redirect():
     return send_from_directory('.', 'analytics.html')
 
+@app.route('/customers.html')
+def customers():
+    return send_from_directory('.', 'customers.html')
+
+@app.route('/customers')
+def customers_redirect():
+    return send_from_directory('.', 'customers.html')
+
 @app.route('/<path:path>')
 def serve_static(path):
     if os.path.exists(path):
