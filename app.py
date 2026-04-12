@@ -13,6 +13,14 @@ print("💡 To use ML model: Place churn.csv in this folder and run train_model.
 # Serve static files
 @app.route('/')
 def index():
+    return send_from_directory('.', 'login.html')
+
+@app.route('/login.html')
+def login():
+    return send_from_directory('.', 'login.html')
+
+@app.route('/index.html')
+def dashboard():
     return send_from_directory('.', 'index.html')
 
 @app.route('/analytics.html')

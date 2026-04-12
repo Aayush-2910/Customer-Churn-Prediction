@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ChurnGuard AI</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <!-- Left Side - Branding -->
+        <div class="login-left">
+            <div class="brand-section">
+                <div class="brand-logo">
+                    <i data-lucide="shield-check"></i>
+                </div>
+                <h1>ChurnGuard AI</h1>
+                <p class="tagline">Customer Retention Analytics Platform</p>
+            </div>
+            
+            <div class="features-list">
+                <div class="feature-item-login">
+                    <i data-lucide="brain-circuit"></i>
+                    <div>
+                        <h4>AI-Powered Predictions</h4>
+                        <p>84% accuracy in churn prediction</p>
+                    </div>
+                </div>
+                <div class="feature-item-login">
+                    <i data-lucide="bar-chart-3"></i>
+                    <div>
+                        <h4>Real-Time Analytics</h4>
+                        <p>Interactive dashboards and insights</p>
+                    </div>
+                </div>
+                <div class="feature-item-login">
+                    <i data-lucide="users"></i>
+                    <div>
+                        <h4>Customer Management</h4>
+                        <p>Track and manage all customers</p>
+                    </div>
+                </div>
+                <div class="feature-item-login">
+                    <i data-lucide="shield"></i>
+                    <div>
+                        <h4>Secure & Reliable</h4>
+                        <p>Enterprise-grade security</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-item-login">
+                    <h3>7,043+</h3>
+                    <p>Customers Analyzed</p>
+                </div>
+                <div class="stat-item-login">
+                    <h3>73.5%</h3>
+                    <p>Retention Rate</p>
+                </div>
+                <div class="stat-item-login">
+                    <h3>$4.2M</h3>
+                    <p>Revenue Protected</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="login-right">
+            <div class="login-form-container">
+                <div class="login-header">
+                    <i data-lucide="lock"></i>
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to access your dashboard</p>
+                </div>
+
+                <form id="loginForm" class="login-form">
+                    <div class="form-group-login">
+                        <label for="email">
+                            <i data-lucide="mail"></i>
+                            Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            placeholder="Enter your email"
+                            required
+                            autocomplete="email"
+                        >
+                    </div>
+
+                    <div class="form-group-login">
+                        <label for="password">
+                            <i data-lucide="key"></i>
+                            Password
+                        </label>
+                        <div class="password-input">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                placeholder="Enter your password"
+                                required
+                                autocomplete="current-password"
+                            >
+                            <button type="button" class="toggle-password" onclick="togglePassword()">
+                                <i data-lucide="eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="login-btn">
+                        <i data-lucide="log-in"></i>
+                        <span>Sign In</span>
+                    </button>
+
+                    <div class="demo-credentials">
+                        <p><i data-lucide="info"></i> Demo Credentials:</p>
+                        <div class="demo-info">
+                            <span><strong>Email:</strong> admin@churnguard.ai</span>
+                            <span><strong>Password:</strong> admin123</span>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="login-footer">
+                    <p>Don't have an account? <a href="#" onclick="showSignup()">Sign up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error/Success Message -->
+    <div id="loginMessage" class="login-message hidden"></div>
+
+    <script>
+        lucide.createIcons();
+
+        // Demo credentials
+        const validCredentials = [
+            { email: 'admin@churnguard.ai', password: 'admin123', role: 'Admin' },
+            { email: 'manager@churnguard.ai', password: 'manager123', role: 'Manager' },
+            { email: 'analyst@churnguard.ai', password: 'analyst123', role: 'Analyst' },
+            { email: 'demo@churnguard.ai', password: 'demo123', role: 'Demo User' }
+        ];
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            if (isLoggedIn === 'true') {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Login form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            // Validate credentials
+            const user = validCredentials.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                // Store login state
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('userEmail', email);
+                sessionStorage.setItem('userRole', user.role);
+                
+                if (remember) {
+                    localStorage.setItem('rememberedEmail', email);
+                }
+                
+                // Show success message
+                showMessage('Login successful! Redirecting...', 'success');
+                
+                // Redirect after short delay
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } else {
+                showMessage('Invalid email or password. Please try again.', 'error');
+            }
+        });
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('loginMessage');
+            messageDiv.textContent = message;
+            messageDiv.className = `login-message ${type}`;
+            messageDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                messageDiv.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Show signup (placeholder)
+        function showSignup() {
+            alert('Sign up functionality coming soon! Please use demo credentials to login.');
+        }
+
+        // Auto-fill remembered email
+        window.addEventListener('DOMContentLoaded', function() {
+            const rememberedEmail = localStorage.getItem('rememberedEmail');
+            if (rememberedEmail) {
+                document.getElementById('email').value = rememberedEmail;
+                document.getElementById('remember').checked = true;
+            }
+        });
+    </script>
+</body>
+</html>

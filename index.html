@@ -515,6 +515,31 @@
     </script>
     <script src="script.js"></script>
     <script>
+        // Check authentication
+        const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+        if (!isLoggedIn || isLoggedIn !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        // Add logout functionality to navbar
+        const navLinks = document.querySelector('.nav-links');
+        const logoutBtn = document.createElement('a');
+        logoutBtn.href = '#';
+        logoutBtn.className = 'nav-link';
+        logoutBtn.innerHTML = `
+            <i data-lucide="log-out"></i>
+            <span>Logout</span>
+        `;
+        logoutBtn.onclick = function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                sessionStorage.clear();
+                window.location.href = 'login.html';
+            }
+        };
+        navLinks.appendChild(logoutBtn);
+        lucide.createIcons();
+
         // Auto-fill from customer data
         window.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
