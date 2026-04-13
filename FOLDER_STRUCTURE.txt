@@ -1,0 +1,60 @@
+ChurnGuard AI - Professional Folder Structure
+==============================================
+
+customer-prediction/
+│
+├── 📂 templates/                    [HTML Pages]
+│   ├── login.html                  (4.2 KB) - Authentication page
+│   ├── index.html                  (18.5 KB) - Main dashboard
+│   ├── analytics.html              (12.8 KB) - Analytics & charts
+│   └── customers.html              (8.3 KB) - Customer management
+│
+├── 📂 static/                       [Static Assets]
+│   │
+│   ├── 📂 css/                     [Stylesheets]
+│   │   ├── style.css               (33.8 KB) - Main application styles
+│   │   └── login-styles.css        (7.4 KB) - Login page styles
+│   │
+│   └── 📂 js/                      [JavaScript]
+│       ├── script.js               (6.2 KB) - Dashboard logic
+│       └── customers.js            (18.8 KB) - Customer data & functions
+│
+├── 📂 models/                       [Machine Learning]
+│   ├── train_model.py              (3.5 KB) - Model training script
+│   └── Customer_Churn_Prediction.ipynb - Jupyter analysis notebook
+│
+├── 📂 data/                         [Data Files]
+│   └── test_samples.json           (1.2 KB) - Sample test data
+│
+├── 📂 docs/                         [Documentation]
+│   ├── README.md                   - Project overview
+│   ├── QUICKSTART.md               - Quick start guide
+│   ├── SETUP_INSTRUCTIONS.md       - Setup instructions
+│   └── NETWORK_ACCESS.md           - Network configuration
+│
+├── 📂 .vscode/                      [IDE Configuration]
+│   ├── settings.json               - VS Code settings
+│   └── launch.json                 - Debug configuration
+│
+├── 📂 .git/                         [Version Control]
+│   └── [Git repository files]
+│
+├── 📄 app.py                        (5.8 KB) - Flask backend server
+├── 📄 requirements.txt              - Python dependencies
+├── 📄 package.json                  - Node.js dependencies
+├── 📄 .gitignore                    - Git ignore rules
+├── 📄 PROJECT_STRUCTURE.md          - Detailed structure docs
+└── 📄 FOLDER_STRUCTURE.txt          - This file
+
+==============================================
+Total Structure:
+- 4 HTML templates
+- 2 CSS files
+- 2 JavaScript files
+- 2 Python scripts
+- 1 Jupyter notebook
+- 4 documentation files
+- 1 data file
+
+Server: http://localhost:5000
+Status: ✅ Running

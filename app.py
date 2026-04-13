@@ -1,48 +1,63 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, render_template
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, 
+            template_folder='templates',
+            static_folder='static')
 CORS(app)
 
 print("⚠️  Note: Using rule-based prediction (churn.csv not found)")
-print("💡 To use ML model: Place churn.csv in this folder and run train_model.py")
+print("💡 To use ML model: Place churn.csv in data/ folder and run models/train_model.py")
 
-# Serve static files
+# Serve HTML pages
 @app.route('/')
 def index():
-    return send_from_directory('.', 'login.html')
+    return send_from_directory('templates', 'login.html')
 
 @app.route('/login.html')
 def login():
-    return send_from_directory('.', 'login.html')
+    return send_from_directory('templates', 'login.html')
 
 @app.route('/index.html')
 def dashboard():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory('templates', 'index.html')
 
 @app.route('/analytics.html')
 def analytics():
-    return send_from_directory('.', 'analytics.html')
+    return send_from_directory('templates', 'analytics.html')
 
 @app.route('/analytics')
 def analytics_redirect():
-    return send_from_directory('.', 'analytics.html')
+    return send_from_directory('templates', 'analytics.html')
 
 @app.route('/customers.html')
 def customers():
-    return send_from_directory('.', 'customers.html')
+    return send_from_directory('templates', 'customers.html')
 
 @app.route('/customers')
 def customers_redirect():
-    return send_from_directory('.', 'customers.html')
+    return send_from_directory('templates', 'customers.html')
 
-@app.route('/<path:path>')
-def serve_static(path):
-    if os.path.exists(path):
-        return send_from_directory('.', path)
+# Serve static files (CSS, JS)
+@app.route('/static/<path:path>')
+def serve_static_files(path):
+    return send_from_directory('static', path)
+
+# Legacy routes for backward compatibility
+@app.route('/<path:filename>')
+def serve_legacy(filename):
+    # Check if it's a CSS file
+    if filename.endswith('.css'):
+        return send_from_directory('static/css', filename)
+    # Check if it's a JS file
+    elif filename.endswith('.js'):
+        return send_from_directory('static/js', filename)
+    # Check if it's an HTML file
+    elif filename.endswith('.html'):
+        return send_from_directory('templates', filename)
     return "File not found", 404
 
 @app.route('/predict', methods=['POST'])
